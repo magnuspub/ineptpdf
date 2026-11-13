@@ -70,6 +70,16 @@ File: `keycrack/fo_keycrack.py`
 - Throughput misurato: ~167k chiavi/s per core (Python) → 2^40 ≈ 9,5 giorni su
   8 core.
 
+### fo_keycrack 1.1 — CPU — 2026-11-13 — BUGFIX selezione oggetto
+File: `keycrack/fo_keycrack.py`
+- **FIX:** la ricerca dello stream bersaglio agganciava lo `stream` di un
+  oggetto successivo quando l'oggetto corrente non ne aveva (es. un
+  `/FontDescriptor`), attribuendolo all'objid sbagliato → chiave per-oggetto
+  errata → la chiave non veniva MAI trovata. Ora si controlla che non ci sia
+  `endobj` prima di `stream` (stesso controllo già presente nella versione
+  C/CUDA). Verificato: su un file CEI reale ritrova `bcdef` (`6263646566`).
+- `fo_keycrack_cuda.py` eredita il fix (riusa `find_flate_target`).
+
 ### fo_keycrack-cuda 1.0 — GPU Nvidia (CuPy) — 2026-11-13
 File: `keycrack/fo_keycrack_cuda.py`
 - Kernel CUDA MD5+RC4 via CuPy `RawModule`.

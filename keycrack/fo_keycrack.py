@@ -86,6 +86,12 @@ def find_flate_target(path, want_objid=None):
         si = raw.find(b'stream', body_start)
         if si < 0 or si - body_start > 4000:
             continue
+        # lo 'stream' deve appartenere a QUESTO oggetto: se c'e' un 'endobj'
+        # prima, l'oggetto non ha stream e 'si' punta allo stream di un altro
+        # oggetto -> objid sbagliato -> chiave per-oggetto sbagliata.
+        eo = raw.find(b'endobj', body_start)
+        if eo != -1 and eo < si:
+            continue
         dic = raw[body_start:si]
         if b'/FlateDecode' not in dic:
             continue
@@ -115,6 +121,9 @@ def reference_plaintext(path, objid, nbytes):
     if not m:
         return None
     si = raw.find(b'stream', m.end())
+    eo = raw.find(b'endobj', m.end())
+    if si < 0 or (eo != -1 and eo < si):
+        return None
     a = si + 6
     if raw[a:a + 2] == b'\r\n':
         a += 2
